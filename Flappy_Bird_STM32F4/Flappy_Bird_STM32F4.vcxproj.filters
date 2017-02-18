@@ -44,6 +44,9 @@
     <Filter Include="Source files\System\DELAY">
       <UniqueIdentifier>{fd792912-275f-4aa7-9fc6-6f922c52e88c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source files\Hardware\TOUCH">
+      <UniqueIdentifier>{ce3f966a-ffda-4d9e-95e6-505581e140a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system_stm32f4xx.c">
@@ -264,6 +267,9 @@
     </ClCompile>
     <ClCompile Include="game.c">
       <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hardware\TOUCH\touch.c">
+      <Filter>Source files\Hardware\TOUCH</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -548,6 +554,9 @@
     </ClInclude>
     <ClInclude Include="game.h">
       <Filter>Source files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hardware\TOUCH\touch.h">
+      <Filter>Source files\Hardware\TOUCH</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

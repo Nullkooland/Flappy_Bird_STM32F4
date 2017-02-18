@@ -34,7 +34,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
     <Toolchain>C:\SysGCC\arm-eabi</Toolchain>
   </PropertyGroup>
-  <ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <ClCompile>
+      <Optimization>O0</Optimization>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\StartupFiles\startup_stm32f407xx.c" />
@@ -107,6 +110,7 @@
     <ClCompile Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\STM32F4xx_HAL_Driver\Src\stm32f4xx_ll_usb.c" />
     <ClCompile Include="game.c" />
     <ClCompile Include="Hardware\LCD\lcd.c" />
+    <ClCompile Include="Hardware\TOUCH\touch.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="System\DELAY\delay.c" />
     <ClCompile Include="system_stm32f4xx.c" />
@@ -204,6 +208,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="Hardware\LCD\font.h" />
     <ClInclude Include="Hardware\LCD\lcd.h" />
+    <ClInclude Include="Hardware\TOUCH\touch.h" />
     <ClInclude Include="stm32f4xx_hal_conf.h" />
     <ClInclude Include="System\DELAY\delay.h" />
   </ItemGroup>
