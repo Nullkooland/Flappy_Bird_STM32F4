@@ -44,7 +44,7 @@ const uint16_t TubeColor[] = {
 };
 
 
-typedef struct TubeStruct{
+typedef struct{
 	_Bool IsGrounded;
 	uint16_t posX;
 	uint8_t Height;
@@ -98,7 +98,7 @@ void Toad_Go(void)
 	}
 
 	if (SCREEN_TOUCHED) {
-		toad_SpeedY = -10;
+		toad_SpeedY = -5;
 	}
 	else {
 		toad_SpeedY += 1;

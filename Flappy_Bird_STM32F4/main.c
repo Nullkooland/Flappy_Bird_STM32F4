@@ -13,7 +13,7 @@ void SysTick_Handler(void)
 int main(void)
 {
 	HAL_Init();
-	System_Clock_Init(336, 8, 2, 7);
+	System_Clock_Init(336, 8, 2, 4);
 	LCD_Init();
 	//Touch_Init();
 	Game_Init();

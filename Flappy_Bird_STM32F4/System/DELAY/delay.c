@@ -25,13 +25,17 @@ void System_Clock_Init(uint32_t PLL_N, uint32_t PLL_M, uint32_t PLL_P, uint32_t 
 	if (ret != HAL_OK) while (1);
 
 	//选中PLL作为系统时钟源并且配置HCLK,PCLK1和PCLK2
-	RCC_ClkInitStructure.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+	RCC_ClkInitStructure.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStructure.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;//设置系统时钟时钟源为PLL
 	RCC_ClkInitStructure.AHBCLKDivider = RCC_SYSCLK_DIV1;//AHB分频系数为1
 	RCC_ClkInitStructure.APB1CLKDivider = RCC_HCLK_DIV4; //APB1分频系数为4
 	RCC_ClkInitStructure.APB2CLKDivider = RCC_HCLK_DIV2; //APB2分频系数为2
-	ret = HAL_RCC_ClockConfig(&RCC_ClkInitStructure, FLASH_LATENCY_4);//同时设置FLASH延时周期为5WS，也就是6个CPU周期。
-//	printf("%u\r\n", HAL_RCC_GetHCLKFreq());
+	ret = HAL_RCC_ClockConfig(&RCC_ClkInitStructure, FLASH_LATENCY_5);//同时设置FLASH延时周期为5WS，也就是6个CPU周期。
+	//printf("%u\r\n", HAL_RCC_GetHCLKFreq());
 	
 	if (ret != HAL_OK) while (1);
+
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }

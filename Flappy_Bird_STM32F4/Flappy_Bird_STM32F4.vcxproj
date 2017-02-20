@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
     <ClCompile>
-      <Optimization>O0</Optimization>
+      <Optimization>O3</Optimization>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
