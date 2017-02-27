@@ -4,6 +4,7 @@
 //#include "Hardware\TOUCH\touch.h"
 #include "game.h"
 
+extern DMA_HandleTypeDef hdma2_fsmc;
 void SysTick_Handler(void)
 {
 	HAL_IncTick();
@@ -17,10 +18,10 @@ int main(void)
 	LCD_Init();
 	//Touch_Init();
 	Game_Init();
-
+	uint8_t i = 0xFF;
 	for (;;)
 	{
 		Toad_Go();
-		HAL_Delay(10);
+		HAL_Delay(30);
 	}
 }

@@ -11,7 +11,6 @@ typedef struct
 	uint16_t height;			//LCD 高度
 	uint16_t id;				//LCD ID
 	uint8_t  dir;			//横屏还是竖屏控制：0，竖屏；1，横屏。	
-	uint16_t wramcmd;		//开始写gram指令
 	uint16_t setxcmd;		//设置x坐标指令
 	uint16_t setycmd;		//设置y坐标指令 
 }_lcd_dev;
@@ -24,20 +23,21 @@ extern uint16_t  BACK_COLOR; //背景颜色.默认为白色
 
 
 //////////////////////////////////////////////////////////////////////////////////	 
-//-----------------LCD端口定义---------------- 
-#define	LCD_LED PBout(1)  		//LCD背光    		 PB1 	    
+//-----------------LCD端口定义----------------  
 //LCD地址结构体
 typedef struct
 {
-	__IO uint16_t LCD_REG;
-	__IO uint16_t LCD_RAM;
+	__IO uint16_t REG;
+	__IO uint16_t RAM;
 } LCD_TypeDef;
 //使用NOR/SRAM的 Bank1.sector1,地址位HADDR[27,26]=00   A18作为数据命令区分线 
 //注意设置时STM32内部会右移一位对其! 			    
 #define LCD_BASE        ((uint32_t)(0x60000000 | 0x00007FFFE))
 #define LCD             ((LCD_TypeDef *) LCD_BASE)
 //////////////////////////////////////////////////////////////////////////////////
-	 
+#define CMD_WRITE_RAM	0x22	 
+#define SCEERN_Width
+//////////////////////////////////////////////////////////////////////////////////
 //扫描方向定义
 #define L2R_U2D  0 //从左到右,从上到下
 #define L2R_D2U  1 //从左到右,从下到上
@@ -91,22 +91,20 @@ uint16_t  LCD_ReadPoint(uint16_t x,uint16_t y); 											//读点
 void LCD_Draw_Circle(uint16_t x0,uint16_t y0,uint8_t r);										//画圆
 void LCD_DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);							//画线
 void LCD_DrawRectangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);		   				//画矩形
-void LCD_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t color);		   				//填充单色
-void LCD_Color_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t *color);				//填充指定颜色
+void LCD_ColorFill(uint16_t PosX, uint16_t PosY, uint16_t Width, uint16_t Height, uint16_t Color);		   				//填充单色
+void LCD_DrawPicture(uint16_t PosX, uint16_t PosY, uint16_t Width, uint16_t Height, uint16_t *Color_Buffer);
 void LCD_ShowChar(uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t mode);						//显示一个字符
 void LCD_ShowNum(uint16_t x,uint16_t y,uint32_t num,uint8_t len,uint8_t size);  						//显示一个数字
 void LCD_ShowxNum(uint16_t x,uint16_t y,uint32_t num,uint8_t len,uint8_t size,uint8_t mode);				//显示 数字
 void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t size,uint8_t *p);		//显示一个字符串,12/16字体
-void LCD_Show_Chinese_Char(uint16_t x, uint16_t y, uint8_t index, uint8_t mode);
-void LCD_Show_Chinese_Str(uint16_t x, uint16_t y, uint8_t* str, uint8_t mode);
+//void LCD_Show_Chinese_Char(uint16_t x, uint16_t y, uint8_t index, uint8_t mode);
+//void LCD_Show_Chinese_Str(uint16_t x, uint16_t y, uint8_t* str, uint8_t mode);
 
 void LCD_WR_REG(__IO uint16_t regval);
 void LCD_WR_DATA(__IO uint16_t data);
 uint16_t LCD_RD_DATA(void);
 void LCD_WriteReg(uint16_t LCD_Reg, uint16_t LCD_RegValue);
-uint16_t LCD_ReadReg(uint16_t LCD_Reg);
-void LCD_WriteRAM_Prepare(void);
-void LCD_WriteRAM(uint16_t RGB_Code);		  
+uint16_t LCD_ReadReg(uint16_t LCD_Reg);		  
 void LCD_Scan_Dir(uint8_t dir);							//设置屏扫描方向
 void LCD_Display_Dir(uint8_t dir);						//设置屏幕显示方向
 void LCD_Set_Window(uint16_t sx,uint16_t sy,uint16_t width,uint16_t height);//设置窗口		
@@ -146,7 +144,6 @@ void delay_us(uint32_t nus);
 #define R31            0x1F
 #define R32            0x20
 #define R33            0x21
-#define R34            0x22
 #define R36            0x24
 #define R37            0x25
 #define R40            0x28

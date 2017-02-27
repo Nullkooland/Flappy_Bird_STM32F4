@@ -1,7 +1,8 @@
 #include "lcd.h"
 #include "font.h" 
-#include "stdlib.h"
 //////////////////////////////////////////////////////////////////////////////////	 
+
+DMA_HandleTypeDef hdma2_fsmc;
 
 //LCD的画笔颜色和背景色	   
 uint16_t POINT_COLOR=0x0000;	//画笔颜色
@@ -16,21 +17,21 @@ _lcd_dev lcddev;
 void LCD_WR_REG(__IO uint16_t regval)
 {   
 	regval=regval;		//使用-O2优化的时候,必须插入的延时
-	LCD->LCD_REG=regval;//写入要写的寄存器序号	 
+	LCD->REG=regval;//写入要写的寄存器序号	 
 }
 //写LCD数据
 //data:要写入的值
 void LCD_WR_DATA(__IO uint16_t data)
 {	 
 	data=data;			//使用-O2优化的时候,必须插入的延时
-	LCD->LCD_RAM=data;		 
+	LCD->RAM=data;		 
 }
 //读LCD数据
 //返回值:读到的值
 uint16_t LCD_RD_DATA(void)
 {		
 	__IO uint16_t ram;			//防止被优化
-	ram=LCD->LCD_RAM;
+	ram=LCD->RAM;
 	return ram;		 
 }					   
 //写寄存器
@@ -38,8 +39,8 @@ uint16_t LCD_RD_DATA(void)
 //LCD_RegValue:要写入的数据
 inline void LCD_WriteReg(uint16_t LCD_Reg, uint16_t LCD_RegValue)
 {	
-	LCD->LCD_REG = LCD_Reg;		//写入要写的寄存器序号	 
-	LCD->LCD_RAM = LCD_RegValue;//写入数据	    		 
+	LCD->REG = LCD_Reg;		//写入要写的寄存器序号	 
+	LCD->RAM = LCD_RegValue;//写入数据	    		 
 }	   
 //读寄存器
 //LCD_Reg:寄存器地址
@@ -51,17 +52,6 @@ uint16_t LCD_ReadReg(uint16_t LCD_Reg)
 	return LCD_RD_DATA();		//返回读到的值
 }   
 
-//开始写GRAM
-void LCD_WriteRAM_Prepare(void)
-{
- 	LCD->LCD_REG=lcddev.wramcmd;	  
-}	 
-//LCD写GRAM
-//RGB_Code:颜色值
-void LCD_WriteRAM(uint16_t RGB_Code)
-{							    
-	LCD->LCD_RAM = RGB_Code;//写十六位GRAM
-}
 //从ILI93xx读出的数据为GBR格式，而我们写入的时候为RGB格式。
 //通过该函数转换
 //c:GBR格式的颜色值
@@ -89,7 +79,7 @@ uint16_t LCD_ReadPoint(uint16_t x,uint16_t y)
  	__IO uint16_t r=0,g=0,b=0;
 	if(x>=lcddev.width||y>=lcddev.height) return 0;	//超过了范围,直接返回		   
 	LCD_SetCursor(x,y);	    
-	LCD_WR_REG(R34);      		 				//其他IC发送读GRAM指令  
+	LCD_WR_REG(CMD_WRITE_RAM);      		 				//其他IC发送读GRAM指令  
  	LCD_RD_DATA();									//dummy Read	   
 	opt_delay(2);	  
  	r=LCD_RD_DATA();  		  						//实际坐标颜色
@@ -166,8 +156,8 @@ void LCD_Scan_Dir(uint8_t dir)
 void LCD_DrawPoint(uint16_t x,uint16_t y)
 {
 	LCD_SetCursor(x,y);		//设置光标位置 
-	LCD_WriteRAM_Prepare();	//开始写入GRAM
-	LCD->LCD_RAM=POINT_COLOR; 
+	LCD->REG = CMD_WRITE_RAM;	//开始写入GRAM
+	LCD->RAM=POINT_COLOR; 
 }
 //快速画点
 //x,y:坐标
@@ -178,8 +168,8 @@ void LCD_Fast_DrawPoint(uint16_t x,uint16_t y,uint16_t color)
 	LCD_WriteReg(lcddev.setxcmd,x);
 	LCD_WriteReg(lcddev.setycmd,y);		 
 
-	LCD->LCD_REG = lcddev.wramcmd; 
-	LCD->LCD_RAM = color; 
+	LCD->REG = CMD_WRITE_RAM;
+	LCD->RAM = color; 
 }	 
 
 
@@ -193,7 +183,6 @@ void LCD_Display_Dir(uint8_t dir)
 		lcddev.width=240;
 		lcddev.height=320;
 
-		lcddev.wramcmd=R34;
 	 	lcddev.setxcmd=R32;
 		lcddev.setycmd=R33;  
 
@@ -203,7 +192,6 @@ void LCD_Display_Dir(uint8_t dir)
 		lcddev.width=320;
 		lcddev.height=240;
 
-		lcddev.wramcmd=R34;
 	 	lcddev.setxcmd=R33;
 		lcddev.setycmd=R32;  
 	} 
@@ -216,33 +204,32 @@ void LCD_Display_Dir(uint8_t dir)
 //68042,横屏时不支持窗口设置!! 
 void LCD_Set_Window(uint16_t sx,uint16_t sy,uint16_t width,uint16_t height)
 {   
-	uint8_t hsareg,heareg,vsareg,veareg;
 	uint16_t hsaval,heaval,vsaval,veaval; 
 	width=sx+width-1;
 	height=sy+height-1;
 	
-	if(lcddev.dir==1)//横屏
+	if (lcddev.dir == 1)//横屏
 	{
 		//窗口值
-		hsaval=sy;				
-		heaval=height;
-		vsaval=lcddev.width-width-1;
-		veaval=lcddev.width-sx-1;				
-	}else
-	{ 
-		hsaval=sx;				
-		heaval=width;
-		vsaval=sy;
-		veaval=height;
-	} 
-	hsareg=0X50;heareg=0X51;//水平方向窗口寄存器
-	vsareg=0X52;veareg=0X53;//垂直方向窗口寄存器	   							  
-	//设置寄存器值
-	LCD_WriteReg(hsareg,hsaval);
-	LCD_WriteReg(heareg,heaval);
-	LCD_WriteReg(vsareg,vsaval);
-	LCD_WriteReg(veareg,veaval);		
-	LCD_SetCursor(sx,sy);	//设置光标位置
+		hsaval = sy;
+		heaval = height;
+		vsaval = lcddev.width - width - 1;
+		veaval = lcddev.width - sx - 1;
+	}
+	else
+	{
+		hsaval = sx;
+		heaval = width;
+		vsaval = sy;
+		veaval = height;
+	}
+
+	LCD_WriteReg(0x50, hsaval);
+	LCD_WriteReg(0x51, heaval);
+	LCD_WriteReg(0x52, vsaval);
+	LCD_WriteReg(0x53, veaval);
+	LCD_SetCursor(sx, sy);	//设置光标位置
+
 } 
 //初始化lcd
 //该初始化函数可以初始化各种ILI93XX液晶,但是其他函数是基于ILI9320的!!!
@@ -281,7 +268,6 @@ void LCD_Init(void)
 
 	LCD_FSMC_Handler.Instance = FSMC_NORSRAM_DEVICE;
 	LCD_FSMC_Handler.Extended = FSMC_NORSRAM_EXTENDED_DEVICE;
-
 	LCD_FSMC_Handler.Init.NSBank = FSMC_NORSRAM_BANK1;				//这里我们使用NE1 
 	LCD_FSMC_Handler.Init.DataAddressMux = FSMC_DATA_ADDRESS_MUX_DISABLE;	//不复用数据地址
 	LCD_FSMC_Handler.Init.MemoryType = FSMC_MEMORY_TYPE_SRAM;			//FSMC_MemoryType_SRAM;  //SRAM   
@@ -319,6 +305,27 @@ void LCD_Init(void)
 	Write_Timing.AccessMode = FSMC_ACCESS_MODE_A;	 //模式A 
 
 	HAL_SRAM_Init(&LCD_FSMC_Handler, &ReadWrite_Timing, &Write_Timing);
+
+
+	__HAL_RCC_DMA2_CLK_ENABLE();
+	HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+
+	hdma2_fsmc.Instance = DMA2_Stream1;
+	hdma2_fsmc.Init.Direction = DMA_MEMORY_TO_MEMORY;
+	hdma2_fsmc.Init.Mode = DMA_NORMAL;
+	hdma2_fsmc.Init.MemInc = DMA_MINC_DISABLE;
+	hdma2_fsmc.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+	hdma2_fsmc.Init.PeriphInc = DMA_PINC_ENABLE;
+	hdma2_fsmc.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+	hdma2_fsmc.Init.Priority = DMA_PRIORITY_HIGH;
+	hdma2_fsmc.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+	hdma2_fsmc.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+	hdma2_fsmc.Init.MemBurst = DMA_MBURST_SINGLE;
+	hdma2_fsmc.Init.PeriphBurst = DMA_PBURST_SINGLE;
+
+	HAL_DMA_DeInit(&hdma2_fsmc);
+	HAL_DMA_Init(&hdma2_fsmc);
 
 	HAL_Delay(50); // delay 50 ms 
  	LCD_WriteReg(0x0000,0x0001);
@@ -383,48 +390,34 @@ void LCD_Init(void)
 }  
 //清屏函数
 //color:要清屏的填充色
-void LCD_Clear(uint16_t color)
-{
-	uint32_t index = 0;      
-	uint32_t totalpoint=lcddev.width;
-	totalpoint*=lcddev.height; 			//得到总点数
-	LCD_SetCursor(0x00,0x0000);	//设置光标位置 
-	LCD_WriteRAM_Prepare();     		//开始写入GRAM	 	  
-	for(index=0;index<totalpoint;index++)
+void LCD_Clear(uint16_t Color)
+{    
+	LCD_Set_Window(0, 0, 240, 320);
+	LCD->REG = CMD_WRITE_RAM;     		//开始写入GRAM	 	  
+	for(uint32_t i = 0; i < lcddev.width * lcddev.height; i++)
 	{
-		LCD->LCD_RAM=color;	
+		LCD->RAM = Color;	
 	}
 }  
-//在指定区域内填充单个颜色
-//(sx,sy),(ex,ey):填充矩形对角坐标,区域大小为:(ex-sx+1)*(ey-sy+1)   
-//color:要填充的颜色
-void LCD_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t color)
-{          
-	uint16_t i,j,temp,xlen = 0;
 
-	xlen=ex-sx+1;	 
-	for(i=sy;i<=ey;i++)
+void LCD_ColorFill(uint16_t PosX,uint16_t PosY,uint16_t Width,uint16_t Height,uint16_t Color)
+{          
+	LCD_Set_Window(PosX, PosY, Width, Height);
+	LCD->REG = CMD_WRITE_RAM;
+	for (uint32_t i = 0; i < Width * Height; i++)
 	{
-		LCD_SetCursor(sx,i);      				//设置光标位置 
-		LCD_WriteRAM_Prepare();     			//开始写入GRAM	  
-		for(j=0;j<xlen;j++)LCD->LCD_RAM=color;	//显示颜色 	    
+		LCD->RAM = Color;
 	}
 		 
 }  
-//在指定区域内填充指定颜色块			 
-//(sx,sy),(ex,ey):填充矩形对角坐标,区域大小为:(ex-sx+1)*(ey-sy+1)   
-//color:要填充的颜色
-void LCD_Color_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t *color)
+
+void LCD_DrawPicture(uint16_t PosX, uint16_t PosY, uint16_t Width, uint16_t Height,uint16_t *Color_Buffer)
 {  
-	uint16_t height,width,i,j;
-	width=ex-sx+1; 			//得到填充的宽度
-	height=ey-sy+1;			//高度
- 	for(i=0;i<height;i++)
-	{
- 		LCD_SetCursor(sx,sy+i);   	//设置光标位置 
-		LCD_WriteRAM_Prepare();     //开始写入GRAM
-		for(j=0;j<width;j++)LCD->LCD_RAM=color[i*width+j];//写入数据 
-	}		  
+	LCD_Set_Window(PosX, PosY, Width, Height);
+	LCD->REG = CMD_WRITE_RAM;
+
+	HAL_DMA_Start(&hdma2_fsmc, Color_Buffer, &LCD->RAM, Width * Height); // I LOVE DMA LOL :D
+	HAL_DMA_PollForTransfer(&hdma2_fsmc, HAL_DMA_FULL_TRANSFER, 30);
 }  
 //画线
 //x1,y1:起点坐标

@@ -39,6 +39,14 @@
       <Optimization>O3</Optimization>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <ClCompile>
+      <DumpStackUsage>true</DumpStackUsage>
+    </ClCompile>
+    <ToolchainSettingsContainer>
+      <ARMCPU>cortex-m4</ARMCPU>
+    </ToolchainSettingsContainer>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\StartupFiles\startup_stm32f407xx.c" />
     <ClCompile Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c" />
@@ -109,6 +117,7 @@
     <ClCompile Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\STM32F4xx_HAL_Driver\Src\stm32f4xx_ll_sdmmc.c" />
     <ClCompile Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\STM32F4xx_HAL_Driver\Src\stm32f4xx_ll_usb.c" />
     <ClCompile Include="game.c" />
+    <ClCompile Include="Hardware\DMA\DMA.c" />
     <ClCompile Include="Hardware\LCD\lcd.c" />
     <ClCompile Include="Hardware\TOUCH\touch.c" />
     <ClCompile Include="main.c" />
@@ -206,6 +215,7 @@
     <ClInclude Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\STM32F4xx_HAL_Driver\Inc\stm32f4xx_ll_sdmmc.h" />
     <ClInclude Include="C:\Users\goose\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx\STM32F4xx_HAL_Driver\Inc\stm32f4xx_ll_usb.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="Hardware\DMA\DMA.h" />
     <ClInclude Include="Hardware\LCD\font.h" />
     <ClInclude Include="Hardware\LCD\lcd.h" />
     <ClInclude Include="Hardware\TOUCH\touch.h" />

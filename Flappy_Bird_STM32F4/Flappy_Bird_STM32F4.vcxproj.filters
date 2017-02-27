@@ -47,6 +47,9 @@
     <Filter Include="Source files\Hardware\TOUCH">
       <UniqueIdentifier>{ce3f966a-ffda-4d9e-95e6-505581e140a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source files\Hardware\DMA">
+      <UniqueIdentifier>{1485e916-061c-47ca-979b-dffbecdbc5b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system_stm32f4xx.c">
@@ -270,6 +273,9 @@
     </ClCompile>
     <ClCompile Include="Hardware\TOUCH\touch.c">
       <Filter>Source files\Hardware\TOUCH</Filter>
+    </ClCompile>
+    <ClCompile Include="Hardware\DMA\DMA.c">
+      <Filter>Source files\Hardware\DMA</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -557,6 +563,9 @@
     </ClInclude>
     <ClInclude Include="Hardware\TOUCH\touch.h">
       <Filter>Source files\Hardware\TOUCH</Filter>
+    </ClInclude>
+    <ClInclude Include="Hardware\DMA\DMA.h">
+      <Filter>Source files\Hardware\DMA</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
